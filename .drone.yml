@@ -1,0 +1,8 @@
+---
+kind: pipeline
+name: build
+steps:
+- name: go vet
+  image: golang:1.13.7
+  commands:
+  - go vet ./...

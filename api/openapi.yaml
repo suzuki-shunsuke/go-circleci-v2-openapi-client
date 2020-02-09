@@ -1,0 +1,2576 @@
+openapi: 3.0.0
+info:
+  description: This describes the resources that make up the CircleCI API v2. API
+    v2 is currently in Preview. Additional documentation for this API can be found
+    in the [API Preview Docs](https://github.com/CircleCI-Public/api-preview-docs/tree/master/docs).
+    Breaking changes to the API will be announced in the [Breaking Changes log](https://github.com/CircleCI-Public/api-preview-docs/blob/master/docs/breaking.md).
+  license:
+    name: MIT
+  title: CircleCI API
+  version: v2
+servers:
+- url: https://circleci.com/api/v2
+security:
+- api_key_query: []
+- api_key_header: []
+- basic_auth: []
+paths:
+  /insights/{project-slug}/workflows:
+    get:
+      description: Get summary metrics for a project's workflows. The past 250 workflow
+        runs, going back at most 90 days, are included in the aggregations.
+      operationId: getProjectWorkflowMetrics
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - allowEmptyValue: true
+        description: A token to retrieve the next page of results.
+        explode: true
+        in: query
+        name: page-token
+        required: false
+        schema:
+          type: string
+        style: form
+      - allowEmptyValue: true
+        description: The name of a vcs branch.
+        explode: true
+        in: query
+        name: branch
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+          description: Summary metrics by workflow
+      summary: Get summary metrics for a project's workflows
+      tags:
+      - Insights
+      - Preview
+  /insights/{project-slug}/workflows/{workflow-name}:
+    get:
+      description: Get recent runs of a workflow. The past 250 workflow runs, going
+        back at most 90 days, are returned.
+      operationId: getProjectWorkflowRuns
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The name of the workflow.
+        example: build-and-test
+        explode: false
+        in: path
+        name: workflow-name
+        required: true
+        schema:
+          type: string
+        style: simple
+      - allowEmptyValue: true
+        description: The name of a vcs branch.
+        explode: true
+        in: query
+        name: branch
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+          description: Recent workflow runs
+      summary: Get recent runs of a workflow
+      tags:
+      - Insights
+      - Preview
+  /me:
+    get:
+      description: Provides information about the user that is currently signed in.
+      operationId: getCurrentUser
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User login information.
+      summary: User Information
+      tags:
+      - User
+      - Preview
+  /me/collaborations:
+    get:
+      description: |-
+        Provides the set of organizations of which a user is a member or a collaborator.
+
+        The set of organizations that a user can collaborate on is composed of:
+
+        * Organizations that the current user belongs to across VCS types (e.g. BitBucket, GitHub)
+        * The parent organization of repository that the user can collaborate on, but is not necessarily a member of
+        * The organization of the current user's account
+      operationId: getCollaborations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Collaboration'
+                type: array
+          description: Collaborations
+      summary: Collaborations
+      tags:
+      - User
+      - Preview
+  /pipeline/{pipeline-id}:
+    get:
+      description: Returns a pipeline by ID.
+      operationId: getPipelineById
+      parameters:
+      - description: The unique ID of the pipeline.
+        explode: false
+        in: path
+        name: pipeline-id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pipeline'
+          description: A pipeline object.
+          links:
+            ProjectFromPipeline:
+              operationId: getProjectBySlug
+              parameters:
+                project_slug: $response.body#/project_slug
+      summary: Get a pipeline
+      tags:
+      - Pipeline
+  /pipeline/{pipeline-id}/config:
+    get:
+      description: Returns a pipeline's configuration by ID.
+      operationId: getPipelineConfigById
+      parameters:
+      - description: The unique ID of the pipeline.
+        explode: false
+        in: path
+        name: pipeline-id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineConfig'
+          description: The configuration strings for the pipeline.
+      summary: Get a pipeline's configuration
+      tags:
+      - Pipeline
+  /pipeline/{pipeline-id}/workflow:
+    get:
+      description: Returns a paginated list of workflows by pipeline ID.
+      operationId: listWorkflowsByPipelineId
+      parameters:
+      - description: The unique ID of the pipeline.
+        explode: false
+        in: path
+        name: pipeline-id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      - allowEmptyValue: true
+        description: A token to retrieve the next page of results.
+        explode: true
+        in: query
+        name: page-token
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowListResponse'
+          description: A paginated list of workflow objects.
+          links:
+            NextPipelineWorkflowsPage:
+              operationId: listWorkflowsByPipelineId
+              parameters:
+                pipeline-id: $request.path.pipeline-id
+                page-token: $response.body#/next_page_token
+      summary: Get a pipeline's workflows
+      tags:
+      - Pipeline
+  /project/{project-slug}:
+    get:
+      description: Retrieves a project by project slug.
+      operationId: getProjectBySlug
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: A project object
+      summary: Get a project
+      tags:
+      - Project
+      - Preview
+  /project/{project-slug}/checkout-key:
+    get:
+      description: Returns a sequence of checkout keys for `:project`.
+      operationId: listCheckoutKeys
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutKeyListResponse'
+          description: A sequence of checkout keys.
+      summary: Get all checkout keys
+      tags:
+      - Project
+      - Preview
+    post:
+      description: Creates a new checkout key. This API request is only usable with
+        a user API token.
+      operationId: createCheckoutKey
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/CheckoutKeyInput'
+        content:
+          application/json:
+            schema:
+              example:
+                type: deploy-key
+              properties:
+                type:
+                  description: The type of checkout key to create. This may be either
+                    `deploy-key` or `user-key`.
+                  enum:
+                  - user-key
+                  - deploy-key
+                  example: deploy-key
+                  title: CheckoutKeyInputType
+                  type: string
+              required:
+              - type
+              title: CheckoutKeyInput
+              type: object
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutKey'
+          description: The checkout key.
+      summary: Create a new checkout key
+      tags:
+      - Project
+      - Preview
+  /project/{project-slug}/checkout-key/{fingerprint}:
+    delete:
+      description: Deletes the checkout key.
+      operationId: deleteCheckoutKey
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: An SSH key fingerprint.
+        example: c9:0b:1c:4f:d5:65:56:b9:ad:88:f9:81:2b:37:74:2f
+        explode: false
+        in: path
+        name: fingerprint
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: A confirmation message.
+      summary: Delete a checkout key
+      tags:
+      - Project
+      - Preview
+    get:
+      description: Returns an individual checkout key.
+      operationId: getCheckoutKey
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: An SSH key fingerprint.
+        example: c9:0b:1c:4f:d5:65:56:b9:ad:88:f9:81:2b:37:74:2f
+        explode: false
+        in: path
+        name: fingerprint
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutKey'
+          description: The checkout key.
+      summary: Get a checkout key
+      tags:
+      - Project
+      - Preview
+  /project/{project-slug}/envvar:
+    get:
+      description: Returns four 'x' characters, in addition to the last four ASCII
+        characters of the value, consistent with the display of environment variable
+        values on the CircleCI website.
+      operationId: listEnvVars
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentVariableListResponse'
+          description: A sequence of environment variables.
+      summary: List all environment variables
+      tags:
+      - Project
+      - Preview
+    post:
+      description: Creates a new environment variable.
+      operationId: createEnvVar
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/EnvironmentVariablePair_1'
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: The name of the environment variable.
+                  example: foo
+                  type: string
+                value:
+                  description: The value of the environment variable.
+                  example: xxxx1234
+                  type: string
+              required:
+              - name
+              - value
+              title: EnvironmentVariablePair
+              type: object
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentVariablePair'
+          description: The environment variable.
+      summary: Create an environment variable
+      tags:
+      - Project
+      - Preview
+  /project/{project-slug}/envvar/{name}:
+    delete:
+      description: Deletes the environment variable named :name.
+      operationId: deleteEnvVar
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The name of the environment variable.
+        example: foo
+        explode: false
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: A confirmation message.
+      summary: Delete an environment variable
+      tags:
+      - Project
+      - Preview
+    get:
+      description: Returns the masked value of environment variable :name.
+      operationId: getEnvVar
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The name of the environment variable.
+        example: foo
+        explode: false
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentVariablePair'
+          description: The environment variable.
+      summary: Get a masked environment variable
+      tags:
+      - Project
+      - Preview
+  /project/{project-slug}/job/{job-number}:
+    get:
+      description: Returns job details.
+      operationId: getJobDetails
+      parameters:
+      - description: The number of the job.
+        example: "123"
+        explode: false
+        in: path
+        name: job-number
+        required: true
+        schema: {}
+        style: simple
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job_Details'
+          description: Job details.
+      summary: Get job details
+      tags:
+      - Job
+      - Preview
+  /project/{project-slug}/job/{job-number}/cancel:
+    post:
+      description: Cancel job with a given job number.
+      operationId: cancelJob
+      parameters:
+      - description: The number of the job.
+        example: "123"
+        explode: false
+        in: path
+        name: job-number
+        required: true
+        schema: {}
+        style: simple
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+      summary: Cancel job
+      tags:
+      - Job
+      - Preview
+  /project/{project-slug}/pipeline:
+    get:
+      description: Returns all pipelines for this project.
+      operationId: listPipelinesForProject
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - allowEmptyValue: true
+        description: The name of a vcs branch.
+        explode: true
+        in: query
+        name: branch
+        required: false
+        schema:
+          type: string
+        style: form
+      - allowEmptyValue: true
+        description: A token to retrieve the next page of results.
+        explode: true
+        in: query
+        name: page-token
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineListResponse'
+          description: A sequence of pipelines.
+          links:
+            NextPipelinePage:
+              operationId: listPipelinesForProject
+              parameters:
+                project-slug: $request.path.project-slug
+                page-token: $response.body#/next_page_token
+      summary: Get all pipelines
+      tags:
+      - Pipeline
+    post:
+      description: Triggers a new pipeline on the project.
+      operationId: triggerPipeline
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The login or user-readable identifier for the pipeline's triggerer.
+        explode: false
+        in: header
+        name: x-attribution-login
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: The id the integration uses to identify the pipeline's triggerer.
+        explode: false
+        in: header
+        name: x-attribution-actor-id
+        required: false
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/TriggerPipelineParameters'
+        content:
+          application/json:
+            schema:
+              description: The information you can supply when triggering a pipeline.
+              example:
+                tag: v3.1.4159
+                branch: feature/design-new-api
+                parameters:
+                  deploy_prod: true
+              properties:
+                branch:
+                  description: The branch where the pipeline ran. The HEAD commit
+                    on this branch was used for the pipeline. Note that `branch` and
+                    `tag` are mutually exclusive.
+                  example: feature/design-new-api
+                  type: string
+                tag:
+                  description: The tag used by the pipeline. The commit that this
+                    tag points to was used for the pipeline. Note that `branch` and
+                    `tag` are mutually exclusive.
+                  example: v3.1.4159
+                  type: string
+                parameters:
+                  description: An object containing pipeline parameters and their
+                    values.
+                  example:
+                    deploy_prod: true
+                  type: object
+              title: TriggerPipelineParameters
+              type: object
+              x-nullable: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineLight'
+          description: The created pipeline.
+      summary: Trigger a new pipeline
+      tags:
+      - Pipeline
+  /project/{project-slug}/pipeline/mine:
+    get:
+      description: Returns a sequence of all pipelines for this project triggered
+        by the user.
+      operationId: listMyPipelines
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - allowEmptyValue: true
+        description: A token to retrieve the next page of results.
+        explode: true
+        in: query
+        name: page-token
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineListResponse'
+          description: A sequence of pipelines.
+          links:
+            NextPipelinePage:
+              operationId: listMyPipelines
+              parameters:
+                project-slug: $request.path.project-slug
+                page-token: $response.body#/next_page_token
+      summary: Get your pipelines
+      tags:
+      - Pipeline
+  /project/{project-slug}/pipeline/{pipeline-number}:
+    get:
+      description: Returns a pipeline by number.
+      operationId: getPipelineByNumber
+      parameters:
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The number of the pipeline.
+        explode: false
+        in: path
+        name: pipeline-number
+        required: true
+        schema: {}
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pipeline'
+          description: A pipeline object.
+          links:
+            ProjectFromPipeline:
+              operationId: getProjectBySlug
+              parameters:
+                project_slug: $response.body#/project_slug
+      summary: Get a pipeline
+      tags:
+      - Pipeline
+  /project/{project-slug}/{job-number}/artifacts:
+    get:
+      description: Returns a job's artifacts.
+      operationId: getJobArtifacts
+      parameters:
+      - description: The number of the job.
+        example: "123"
+        explode: false
+        in: path
+        name: job-number
+        required: true
+        schema: {}
+        style: simple
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactListResponse'
+          description: A paginated list of the job's artifacts.
+      summary: Get a job's artifacts
+      tags:
+      - Job
+      - Preview
+  /project/{project-slug}/{job-number}/tests:
+    get:
+      description: Get test metadata for a build.
+      operationId: getTests
+      parameters:
+      - description: The number of the job.
+        example: "123"
+        explode: false
+        in: path
+        name: job-number
+        required: true
+        schema: {}
+        style: simple
+      - allowReserved: true
+        description: Project slug in the form `vcs-slug/org-name/repo-name`. The `/`
+          characters may be URL-escaped.
+        example: gh/CircleCI-Public/api-preview-docs
+        explode: false
+        in: path
+        name: project-slug
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestsResponse'
+          description: A paginated list of test results.
+      summary: Get test metadata
+      tags:
+      - Job
+      - Preview
+  /user/{id}:
+    get:
+      description: Provides information about the user with the given ID.
+      operationId: getUser
+      parameters:
+      - description: The unique ID of the user.
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User login information.
+      summary: User Information
+      tags:
+      - User
+      - Preview
+  /workflow/{id}:
+    get:
+      description: Returns summary fields of a workflow by ID.
+      operationId: getWorkflowById
+      parameters:
+      - description: The unique ID of the workflow.
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workflow'
+          description: A workflow object.
+          links:
+            ProjectFromGetWorkflow:
+              operationId: getProjectBySlug
+              parameters:
+                project_slug: $response.body#/project_slug
+            WorkflowJobs:
+              operationId: listWorkflowJobs
+              parameters:
+                id: $response.body#/id
+            CancelWorkflow:
+              operationId: cancelWorkflow
+              parameters:
+                id: $response.body#/id
+      summary: Get a workflow
+      tags:
+      - Workflow
+  /workflow/{id}/cancel:
+    post:
+      description: Cancels a running workflow.
+      operationId: cancelWorkflow
+      parameters:
+      - description: The unique ID of the workflow.
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: A confirmation message.
+      summary: Cancel a workflow
+      tags:
+      - Workflow
+  /workflow/{id}/job:
+    get:
+      description: Returns a sequence of jobs for a workflow.
+      operationId: listWorkflowJobs
+      parameters:
+      - description: The unique ID of the workflow.
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowJobListResponse'
+          description: A paginated sequence of jobs.
+          links:
+            NextWorkflowJobPage:
+              operationId: listWorkflowJobs
+              parameters:
+                id: $request.path.id
+                page-token: $response.body#/next_page_token
+      summary: Get a workflow's jobs
+      tags:
+      - Workflow
+  /workflow/{id}/rerun:
+    post:
+      description: Reruns a workflow.
+      operationId: rerunWorkflow
+      parameters:
+      - description: The unique ID of the workflow.
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/RerunWorkflowParameters'
+        content:
+          application/json:
+            schema:
+              description: The information you can supply when rerunning a workflow.
+              example:
+                from_failed: false
+                jobs:
+                - c65b68ef-e73b-4bf2-be9a-7a322a9df150
+                - 5e957edd-5e8c-4985-9178-5d0d69561822
+              properties:
+                jobs:
+                  description: A list of job IDs to rerun.
+                  example:
+                  - c65b68ef-e73b-4bf2-be9a-7a322a9df150
+                  - 5e957edd-5e8c-4985-9178-5d0d69561822
+                  items:
+                    format: uuid
+                    type: string
+                  type: array
+                from_failed:
+                  description: Whether to rerun the workflow from the failed job.
+                    Mutually exclusive with the jobs parameter.
+                  example: false
+                  type: boolean
+              title: RerunWorkflowParameters
+              type: object
+              x-nullable: true
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: A confirmation message.
+      summary: Rerun a workflow
+      tags:
+      - Workflow
+components:
+  requestBodies:
+    TriggerPipelineParameters:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TriggerPipelineParameters'
+    CheckoutKeyInput:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CheckoutKeyInput'
+    RerunWorkflowParameters:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RerunWorkflowParameters'
+    EnvironmentVariablePair_1:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EnvironmentVariablePair_1'
+  schemas:
+    User:
+      example:
+        name: name
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        login: login
+      properties:
+        id:
+          description: The unique ID of the user.
+          format: uuid
+          type: string
+        login:
+          description: The login information for the user on the VCS.
+          title: Login
+          type: string
+        name:
+          description: The name of the user.
+          type: string
+      required:
+      - id
+      - login
+      - name
+    Job_Details_messages:
+      description: Message from CircleCI execution platform.
+      example:
+        reason: reason
+        type: type
+        message: message
+      properties:
+        type:
+          description: Message type.
+          type: string
+        message:
+          description: Information describing message.
+          type: string
+        reason:
+          description: Value describing the reason for message to be added to the
+            job.
+          type: string
+      required:
+      - message
+      - type
+    Pipeline_trigger:
+      description: A summary of the trigger.
+      example:
+        actor:
+          avatar_url: avatar_url
+          login: login
+        received_at: 2000-01-23T04:56:07.000+00:00
+        type: explicit
+      properties:
+        type:
+          description: The type of trigger.
+          enum:
+          - explicit
+          - api
+          - webhook
+          type: string
+        received_at:
+          description: The date and time the trigger was received.
+          format: date-time
+          type: string
+        actor:
+          $ref: '#/components/schemas/Pipeline_trigger_actor'
+      required:
+      - actor
+      - received_at
+      - type
+    Job_Details_latest_workflow:
+      description: Info about the latest workflow the job was a part of.
+      example:
+        name: build-and-test
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          description: The unique ID of the workflow.
+          format: uuid
+          type: string
+        name:
+          description: The name of the workflow.
+          example: build-and-test
+          type: string
+      required:
+      - id
+      - name
+    TriggerPipelineParameters:
+      description: The information you can supply when triggering a pipeline.
+      example:
+        tag: v3.1.4159
+        branch: feature/design-new-api
+        parameters:
+          deploy_prod: true
+      properties:
+        branch:
+          description: The branch where the pipeline ran. The HEAD commit on this
+            branch was used for the pipeline. Note that `branch` and `tag` are mutually
+            exclusive.
+          example: feature/design-new-api
+          type: string
+        tag:
+          description: The tag used by the pipeline. The commit that this tag points
+            to was used for the pipeline. Note that `branch` and `tag` are mutually
+            exclusive.
+          example: v3.1.4159
+          type: string
+        parameters:
+          description: An object containing pipeline parameters and their values.
+          example:
+            deploy_prod: true
+          type: object
+      title: TriggerPipelineParameters
+      type: object
+      x-nullable: true
+    TestsResponse:
+      example:
+        next_page_token: next_page_token
+        items:
+        - result: result
+          file: file
+          classname: classname
+          name: name
+          message: message
+        - result: result
+          file: file
+          classname: classname
+          name: name
+          message: message
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/TestsResponse_items'
+          title: TestsResponse
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    Job_Details_parallel_runs:
+      description: Info about a status of the parallel run.
+      example:
+        index: 0
+        status: status
+      properties:
+        index:
+          description: Index of the parallel run.
+          format: int64
+          type: integer
+        status:
+          description: Status of the parallel run.
+          type: string
+      required:
+      - index
+      - status
+    Job_Details:
+      description: Job Details
+      example:
+        latest_workflow:
+          name: build-and-test
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        queued_at: 2000-01-23T04:56:07.000+00:00
+        parallelism: 6
+        project:
+          external_url: https://github.com/CircleCI-Public/api-preview-docs
+          name: api-preview-docs
+          slug: gh/CircleCI-Public/api-preview-docs
+        created_at: 2000-01-23T04:56:07.000+00:00
+        contexts:
+        - name: name
+        - name: name
+        pipeline:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        duration: 5
+        number: 1
+        web_url: web_url
+        executor:
+          resource_class: resource_class
+          type: type
+        organization:
+          name: name
+        name: name
+        started_at: 2000-01-23T04:56:07.000+00:00
+        messages:
+        - reason: reason
+          type: type
+          message: message
+        - reason: reason
+          type: type
+          message: message
+        parallel_runs:
+        - index: 0
+          status: status
+        - index: 0
+          status: status
+        stopped_at: 2000-01-23T04:56:07.000+00:00
+        status: ""
+      properties:
+        web_url:
+          description: URL of the job in CircleCI Web UI.
+          type: string
+        project:
+          $ref: '#/components/schemas/Job_Details_project'
+        parallel_runs:
+          description: Info about parallels runs and their status.
+          items:
+            $ref: '#/components/schemas/Job_Details_parallel_runs'
+          type: array
+        started_at:
+          description: The date and time the job started.
+          format: date-time
+          type: string
+        latest_workflow:
+          $ref: '#/components/schemas/Job_Details_latest_workflow'
+        name:
+          description: The name of the job.
+          type: string
+        executor:
+          $ref: '#/components/schemas/Job_Details_executor'
+        parallelism:
+          description: A number of parallel runs the job has.
+          format: int64
+          type: integer
+        status:
+          description: The current status of the job.
+        number:
+          description: The number of the job.
+          format: int64
+          type: integer
+        pipeline:
+          $ref: '#/components/schemas/Job_Details_pipeline'
+        duration:
+          description: Duration of a job in milliseconds.
+          format: int64
+          type: integer
+          x-nullable: true
+        created_at:
+          description: The time when the job was created.
+          format: date-time
+          type: string
+        messages:
+          description: Messages from CircleCI execution platform.
+          items:
+            $ref: '#/components/schemas/Job_Details_messages'
+          type: array
+        contexts:
+          description: List of contexts used by the job.
+          items:
+            $ref: '#/components/schemas/Job_Details_contexts'
+          type: array
+        organization:
+          $ref: '#/components/schemas/Job_Details_organization'
+        queued_at:
+          description: The time when the job was placed in a queue.
+          format: date-time
+          type: string
+        stopped_at:
+          description: The time when the job stopped.
+          format: date-time
+          type: string
+          x-nullable: true
+      required:
+      - contexts
+      - created_at
+      - duration
+      - executor
+      - latest_workflow
+      - messages
+      - name
+      - number
+      - organization
+      - parallel_runs
+      - parallelism
+      - pipeline
+      - project
+      - queued_at
+      - started_at
+      - status
+      - web_url
+    CheckoutKeyInput:
+      example:
+        type: deploy-key
+      properties:
+        type:
+          description: The type of checkout key to create. This may be either `deploy-key`
+            or `user-key`.
+          enum:
+          - user-key
+          - deploy-key
+          example: deploy-key
+          title: CheckoutKeyInputType
+          type: string
+      required:
+      - type
+      title: CheckoutKeyInput
+      type: object
+    CheckoutKey:
+      example:
+        fingerprint: c9:0b:1c:4f:d5:65:56:b9:ad:88:f9:81:2b:37:74:2f
+        public-key: ssh-rsa ...
+        created-at: 2015-09-21T17:29:21.042Z
+        type: deploy-key
+        preferred: true
+      properties:
+        public-key:
+          description: A public SSH key.
+          example: ssh-rsa ...
+          type: string
+        type:
+          description: The type of checkout key. This may be either `deploy-key` or
+            `github-user-key`.
+          enum:
+          - deploy-key
+          - github-user-key
+          example: deploy-key
+          title: CheckoutKeyType
+          type: string
+        fingerprint:
+          description: An SSH key fingerprint.
+          example: c9:0b:1c:4f:d5:65:56:b9:ad:88:f9:81:2b:37:74:2f
+          type: string
+        preferred:
+          description: A boolean value that indicates if this key is preferred.
+          example: true
+          type: boolean
+        created-at:
+          description: The date and time the checkout key was created.
+          example: 2015-09-21T17:29:21.042Z
+          format: date-time
+          type: string
+      required:
+      - created-at
+      - fingerprint
+      - preferred
+      - public-key
+      - type
+    WorkflowListResponse:
+      description: A list of workflows and associated pagination token.
+      example:
+        next_page_token: next_page_token
+        items:
+        - project_slug: gh/CircleCI-Public/api-preview-docs
+          pipeline_number: 0
+          name: build-and-test
+          pipeline_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          stopped_at: 2000-01-23T04:56:07.000+00:00
+          status: success
+        - project_slug: gh/CircleCI-Public/api-preview-docs
+          pipeline_number: 0
+          name: build-and-test
+          pipeline_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          stopped_at: 2000-01-23T04:56:07.000+00:00
+          status: success
+      properties:
+        items:
+          description: A list of workflows.
+          items:
+            $ref: '#/components/schemas/Workflow'
+          title: Workflow list
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    Project_vcs_info:
+      description: Information about the VCS that hosts the project source code.
+      example:
+        provider: Bitbucket
+        vcs_url: https://github.com/CircleCI-Public/api-preview-docs
+        default_branch: master
+      properties:
+        vcs_url:
+          description: URL to the repository hosting the project's code
+          example: https://github.com/CircleCI-Public/api-preview-docs
+          type: string
+        provider:
+          description: The VCS provider
+          enum:
+          - Bitbucket
+          - GitHub
+          type: string
+        default_branch:
+          example: master
+          type: string
+      required:
+      - default_branch
+      - provider
+      - vcs_url
+    PipelineLight:
+      description: 'NOTE: The definition of pipeline is subject to change.'
+      example:
+        number: 0
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        state: created
+      properties:
+        id:
+          description: The unique ID of the pipeline.
+          format: uuid
+          type: string
+        state:
+          description: The current state of the pipeline.
+          enum:
+          - created
+          - errored
+          - pending
+          type: string
+        number:
+          description: The number of the pipeline.
+          format: int64
+          type: integer
+        created_at:
+          description: The date and time the pipeline was created.
+          format: date-time
+          type: string
+      required:
+      - created_at
+      - id
+      - number
+      - state
+    Job_Details_pipeline:
+      description: Info about a pipeline the job is a part of.
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          description: The unique ID of the pipeline.
+          format: uuid
+          type: string
+      required:
+      - id
+    PipelineListResponse:
+      description: List of pipelines
+      example:
+        next_page_token: next_page_token
+        items:
+        - project_slug: gh/CircleCI-Public/api-preview-docs
+          number: 0
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          vcs:
+            target_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+            commit:
+              subject: subject
+              body: body
+            tag: v3.1.4159
+            provider_name: GitHub
+            origin_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+            branch: feature/design-new-api
+            revision: f454a02b5d10fcccfd7d9dd7608a76d6493a98b4
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          state: created
+          trigger:
+            actor:
+              avatar_url: avatar_url
+              login: login
+            received_at: 2000-01-23T04:56:07.000+00:00
+            type: explicit
+          errors:
+          - type: config
+            message: message
+          - type: config
+            message: message
+        - project_slug: gh/CircleCI-Public/api-preview-docs
+          number: 0
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          vcs:
+            target_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+            commit:
+              subject: subject
+              body: body
+            tag: v3.1.4159
+            provider_name: GitHub
+            origin_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+            branch: feature/design-new-api
+            revision: f454a02b5d10fcccfd7d9dd7608a76d6493a98b4
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          state: created
+          trigger:
+            actor:
+              avatar_url: avatar_url
+              login: login
+            received_at: 2000-01-23T04:56:07.000+00:00
+            type: explicit
+          errors:
+          - type: config
+            message: message
+          - type: config
+            message: message
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Pipeline'
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    Job_Details_organization:
+      description: Information about an organization.
+      example:
+        name: name
+      properties:
+        name:
+          description: The name of the organization.
+          type: string
+      required:
+      - name
+    Pipeline_errors:
+      description: An error with a type and message.
+      example:
+        type: config
+        message: message
+      properties:
+        type:
+          description: The type of error.
+          enum:
+          - config
+          - plan
+          type: string
+        message:
+          description: A human-readable error message.
+          type: string
+      required:
+      - message
+      - type
+    inline_response_200:
+      description: Paged workflow summary metrics.
+      example:
+        next_page_token: next_page_token
+        items:
+        - window_end: 2000-01-23T04:56:07.000+00:00
+          name: build-and-test
+          window_start: 2000-01-23T04:56:07.000+00:00
+          metrics:
+            total_runs: 0
+            successful_runs: 0
+            mttr: 0
+            failed_runs: 0
+            total_credits_used: 0
+            duration_metrics:
+              min: 0
+              median: 0
+              max: 0
+              mean: 0
+              standard_deviation: 1.2315135
+              p95: 0
+            throughput: 5.637377
+            success_rate: 0.8008282
+        - window_end: 2000-01-23T04:56:07.000+00:00
+          name: build-and-test
+          window_start: 2000-01-23T04:56:07.000+00:00
+          metrics:
+            total_runs: 0
+            successful_runs: 0
+            mttr: 0
+            failed_runs: 0
+            total_credits_used: 0
+            duration_metrics:
+              min: 0
+              median: 0
+              max: 0
+              mean: 0
+              standard_deviation: 1.2315135
+              p95: 0
+            throughput: 5.637377
+            success_rate: 0.8008282
+      properties:
+        items:
+          description: Workflow summary metrics.
+          items:
+            $ref: '#/components/schemas/inline_response_200_items'
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    Pipeline_trigger_actor:
+      description: The user who triggered the Pipeline.
+      example:
+        avatar_url: avatar_url
+        login: login
+      properties:
+        login:
+          description: The login information for the user on the VCS.
+          title: Login
+          type: string
+        avatar_url:
+          description: URL to the user's avatar on the VCS
+          type: string
+          x-nullable: true
+      required:
+      - avatar_url
+      - login
+    Job:
+      description: Job
+      example:
+        project_slug: gh/CircleCI-Public/api-preview-docs
+        canceled_by: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        approved_by: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        name: name
+        started_at: 2000-01-23T04:56:07.000+00:00
+        job_number: 0
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: build
+        stopped_at: 2000-01-23T04:56:07.000+00:00
+        dependencies:
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        status: ""
+      properties:
+        canceled_by:
+          description: The unique ID of the user.
+          format: uuid
+          type: string
+        dependencies:
+          description: A sequence of the unique job IDs for the jobs that this job
+            depends upon in the workflow.
+          items:
+            description: The unique ID of the job.
+            format: uuid
+            type: string
+          type: array
+        job_number:
+          description: The number of the job.
+          format: int64
+          type: integer
+        id:
+          description: The unique ID of the job.
+          format: uuid
+          type: string
+        started_at:
+          description: The date and time the job started.
+          format: date-time
+          type: string
+        name:
+          description: The name of the job.
+          type: string
+        approved_by:
+          description: The unique ID of the user.
+          format: uuid
+          type: string
+        project_slug:
+          description: The project-slug for the job.
+          example: gh/CircleCI-Public/api-preview-docs
+          type: string
+        status:
+          description: The current status of the job.
+        type:
+          description: The type of job.
+          enum:
+          - build
+          - approval
+          type: string
+        stopped_at:
+          description: The time when the job stopped.
+          format: date-time
+          type: string
+          x-nullable: true
+      required:
+      - dependencies
+      - id
+      - job_number
+      - name
+      - project_slug
+      - started_at
+      - status
+      - type
+    Job_Details_project:
+      description: Information about a project.
+      example:
+        external_url: https://github.com/CircleCI-Public/api-preview-docs
+        name: api-preview-docs
+        slug: gh/CircleCI-Public/api-preview-docs
+      properties:
+        slug:
+          description: Project slug in the form `vcs-slug/org-name/repo-name`. The
+            `/` characters may be URL-escaped.
+          example: gh/CircleCI-Public/api-preview-docs
+          type: string
+        name:
+          description: The name of the project
+          example: api-preview-docs
+          type: string
+        external_url:
+          description: URL to the repository hosting the project's code
+          example: https://github.com/CircleCI-Public/api-preview-docs
+          type: string
+      required:
+      - external_url
+      - name
+      - slug
+    PipelineConfig:
+      description: The configuration strings for the pipeline.
+      example:
+        compiled: compiled
+        source: source
+      properties:
+        source:
+          description: The source configuration for the pipeline, before any config
+            compilation has been performed. If there is no config, then this field
+            will be empty.
+          type: string
+        compiled:
+          description: The compiled configuration for the pipeline, after all orb
+            expansion has been performed. If there were errors processing the pipeline's
+            configuration, then this field may be empty.
+          type: string
+      required:
+      - compiled
+      - source
+    WorkflowJobListResponse:
+      example:
+        next_page_token: next_page_token
+        items:
+        - project_slug: gh/CircleCI-Public/api-preview-docs
+          canceled_by: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          approved_by: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          started_at: 2000-01-23T04:56:07.000+00:00
+          job_number: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: build
+          stopped_at: 2000-01-23T04:56:07.000+00:00
+          dependencies:
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          status: ""
+        - project_slug: gh/CircleCI-Public/api-preview-docs
+          canceled_by: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          approved_by: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          started_at: 2000-01-23T04:56:07.000+00:00
+          job_number: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: build
+          stopped_at: 2000-01-23T04:56:07.000+00:00
+          dependencies:
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          status: ""
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Job'
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    MessageResponse:
+      description: message response
+      example:
+        message: message
+      properties:
+        message:
+          description: A human-readable message
+          type: string
+      required:
+      - message
+    inline_response_200_1_items:
+      example:
+        duration: 0
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        stopped_at: 2000-01-23T04:56:07.000+00:00
+        credits-used: 0
+        status: success
+      properties:
+        id:
+          description: The unique ID of the workflow.
+          format: uuid
+          type: string
+        duration:
+          description: The duration in seconds of a run.
+          format: int64
+          minimum: 0
+          type: integer
+        created_at:
+          description: The date and time the workflow was created.
+          format: date-time
+          type: string
+        stopped_at:
+          description: The date and time the workflow stopped.
+          format: date-time
+          type: string
+          x-nullable: true
+        credits-used:
+          description: The number of credits used during execution
+          format: int64
+          minimum: 0
+          type: integer
+        status:
+          description: Workflow status.
+          enum:
+          - success
+          - failed
+          - error
+          - canceled
+          - unauthorized
+          type: string
+          x-nullable: true
+      required:
+      - created_at
+      - credits-used
+      - duration
+      - id
+      - status
+      - stopped_at
+    Workflow:
+      description: A workflow
+      example:
+        project_slug: gh/CircleCI-Public/api-preview-docs
+        pipeline_number: 0
+        name: build-and-test
+        pipeline_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        stopped_at: 2000-01-23T04:56:07.000+00:00
+        status: success
+      properties:
+        id:
+          description: The unique ID of the workflow.
+          format: uuid
+          type: string
+        name:
+          description: The name of the workflow.
+          example: build-and-test
+          type: string
+        status:
+          description: The current status of the workflow.
+          enum:
+          - success
+          - running
+          - not_run
+          - failed
+          - error
+          - failing
+          - on_hold
+          - canceled
+          - unauthorized
+          type: string
+        created_at:
+          description: The date and time the workflow was created.
+          format: date-time
+          type: string
+        stopped_at:
+          description: The date and time the workflow stopped.
+          format: date-time
+          type: string
+          x-nullable: true
+        pipeline_id:
+          description: The ID of the pipeline this workflow belongs to.
+          format: uuid
+          type: string
+        pipeline_number:
+          description: The number of the pipeline this workflow belongs to.
+          format: int64
+          type: integer
+        project_slug:
+          description: The project-slug for the pipeline this workflow belongs to.
+          example: gh/CircleCI-Public/api-preview-docs
+          type: string
+      required:
+      - created_at
+      - id
+      - name
+      - pipeline_id
+      - pipeline_number
+      - project_slug
+      - status
+      - stopped_at
+    EnvironmentVariableListResponse:
+      example:
+        next_page_token: next_page_token
+        items:
+        - name: foo
+          value: xxxx1234
+        - name: foo
+          value: xxxx1234
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/EnvironmentVariablePair'
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    Job_Details_contexts:
+      description: Information about the context.
+      example:
+        name: name
+      properties:
+        name:
+          description: The name of the context.
+          type: string
+      required:
+      - name
+    inline_response_200_metrics:
+      description: Metrics relating to a workflow's runs.
+      example:
+        total_runs: 0
+        successful_runs: 0
+        mttr: 0
+        failed_runs: 0
+        total_credits_used: 0
+        duration_metrics:
+          min: 0
+          median: 0
+          max: 0
+          mean: 0
+          standard_deviation: 1.2315135
+          p95: 0
+        throughput: 5.637377
+        success_rate: 0.8008282
+      properties:
+        success_rate:
+          description: The ratio of successful runs / total runs.
+          format: float
+          type: number
+        total_runs:
+          description: The total number of runs.
+          format: int64
+          minimum: 0
+          type: integer
+        failed_runs:
+          description: The number of failed runs.
+          format: int64
+          minimum: 0
+          type: integer
+        successful_runs:
+          description: The number of successful runs.
+          format: int64
+          minimum: 0
+          type: integer
+        throughput:
+          description: The average number of workflow runs per day.
+          format: float
+          type: number
+        mttr:
+          description: The mean time to recovery (mean time between failures and their
+            next success) in seconds.
+          format: int64
+          minimum: 0
+          type: integer
+        total_credits_used:
+          description: The total credits consumed by the workflow in the aggregation
+            window.
+          format: int64
+          minimum: 0
+          type: integer
+        duration_metrics:
+          $ref: '#/components/schemas/inline_response_200_metrics_duration_metrics'
+      required:
+      - duration_metrics
+      - failed_runs
+      - mttr
+      - success_rate
+      - successful_runs
+      - throughput
+      - total_credits_used
+      - total_runs
+    EnvironmentVariablePair_1:
+      properties:
+        name:
+          description: The name of the environment variable.
+          example: foo
+          type: string
+        value:
+          description: The value of the environment variable.
+          example: xxxx1234
+          type: string
+      required:
+      - name
+      - value
+      title: EnvironmentVariablePair
+      type: object
+    Pipeline_vcs_commit:
+      description: The latest commit in the pipeline.
+      example:
+        subject: subject
+        body: body
+      properties:
+        subject:
+          description: The subject of the commit message.
+          type: string
+          x-nullable: true
+        body:
+          description: The body of the commit message.
+          type: string
+          x-nullable: true
+      required:
+      - body
+      - subject
+    Artifact:
+      description: An artifact
+      example:
+        path: path
+        node_index: 0
+        url: url
+      properties:
+        path:
+          description: The artifact path.
+          type: string
+        node_index:
+          description: The index of the node that stored the artifact.
+          format: int64
+          minimum: 0
+          type: integer
+        url:
+          description: The URL to download the artifact contents.
+          type: string
+      required:
+      - node_index
+      - path
+      - url
+    ArtifactListResponse:
+      example:
+        next_page_token: next_page_token
+        items:
+        - path: path
+          node_index: 0
+          url: url
+        - path: path
+          node_index: 0
+          url: url
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Artifact'
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    Pipeline:
+      description: 'NOTE: The definition of pipeline is subject to change.'
+      example:
+        project_slug: gh/CircleCI-Public/api-preview-docs
+        number: 0
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        vcs:
+          target_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+          commit:
+            subject: subject
+            body: body
+          tag: v3.1.4159
+          provider_name: GitHub
+          origin_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+          branch: feature/design-new-api
+          revision: f454a02b5d10fcccfd7d9dd7608a76d6493a98b4
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        state: created
+        trigger:
+          actor:
+            avatar_url: avatar_url
+            login: login
+          received_at: 2000-01-23T04:56:07.000+00:00
+          type: explicit
+        errors:
+        - type: config
+          message: message
+        - type: config
+          message: message
+      properties:
+        id:
+          description: The unique ID of the pipeline.
+          format: uuid
+          type: string
+        errors:
+          description: A sequence of errors that have occurred within the pipeline.
+          items:
+            $ref: '#/components/schemas/Pipeline_errors'
+          type: array
+        project_slug:
+          description: The project-slug for the pipeline.
+          example: gh/CircleCI-Public/api-preview-docs
+          type: string
+        updated_at:
+          description: The date and time the pipeline was last updated.
+          format: date-time
+          type: string
+        number:
+          description: The number of the pipeline.
+          format: int64
+          type: integer
+        state:
+          description: The current state of the pipeline.
+          enum:
+          - created
+          - errored
+          - pending
+          type: string
+        created_at:
+          description: The date and time the pipeline was created.
+          format: date-time
+          type: string
+        trigger:
+          $ref: '#/components/schemas/Pipeline_trigger'
+        vcs:
+          $ref: '#/components/schemas/Pipeline_vcs'
+      required:
+      - created_at
+      - errors
+      - id
+      - number
+      - project_slug
+      - state
+      - trigger
+    inline_response_200_metrics_duration_metrics:
+      description: Metrics relating to the duration of runs for a workflow.
+      example:
+        min: 0
+        median: 0
+        max: 0
+        mean: 0
+        standard_deviation: 1.2315135
+        p95: 0
+      properties:
+        min:
+          description: The minimum duration, in seconds, among a group of runs.
+          format: int64
+          minimum: 0
+          type: integer
+        mean:
+          description: The mean duration, in seconds, among a group of runs.
+          format: int64
+          minimum: 0
+          type: integer
+        median:
+          description: The median duration, in seconds, among a group of runs.
+          format: int64
+          minimum: 0
+          type: integer
+        p95:
+          description: The 95th percentile duration, in seconds, among a group of
+            runs.
+          format: int64
+          minimum: 0
+          type: integer
+        max:
+          description: The max duration, in seconds, among a group of runs.
+          format: int64
+          minimum: 0
+          type: integer
+        standard_deviation:
+          description: The standard deviation, in seconds, among a group of runs.
+          format: float
+          type: number
+      required:
+      - max
+      - mean
+      - median
+      - min
+      - p95
+      - standard_deviation
+    inline_response_200_items:
+      example:
+        window_end: 2000-01-23T04:56:07.000+00:00
+        name: build-and-test
+        window_start: 2000-01-23T04:56:07.000+00:00
+        metrics:
+          total_runs: 0
+          successful_runs: 0
+          mttr: 0
+          failed_runs: 0
+          total_credits_used: 0
+          duration_metrics:
+            min: 0
+            median: 0
+            max: 0
+            mean: 0
+            standard_deviation: 1.2315135
+            p95: 0
+          throughput: 5.637377
+          success_rate: 0.8008282
+      properties:
+        name:
+          description: The name of the workflow.
+          example: build-and-test
+          type: string
+        window_start:
+          description: The start of the aggregation window for workflow metrics.
+          format: date-time
+          type: string
+        window_end:
+          description: The end of the aggregation window for workflow metrics.
+          format: date-time
+          type: string
+        metrics:
+          $ref: '#/components/schemas/inline_response_200_metrics'
+      required:
+      - metrics
+      - name
+      - window_end
+      - window_start
+    Project:
+      description: 'NOTE: The definition of Project is subject to change.'
+      example:
+        name: api-preview-docs
+        vcs_info:
+          provider: Bitbucket
+          vcs_url: https://github.com/CircleCI-Public/api-preview-docs
+          default_branch: master
+        organization_name: CircleCI-Public
+        slug: gh/CircleCI-Public/api-preview-docs
+      properties:
+        slug:
+          description: Project slug in the form `vcs-slug/org-name/repo-name`. The
+            `/` characters may be URL-escaped.
+          example: gh/CircleCI-Public/api-preview-docs
+          type: string
+        name:
+          description: The name of the project
+          example: api-preview-docs
+          type: string
+        organization_name:
+          description: The name of the organization the project belongs to
+          example: CircleCI-Public
+          type: string
+        vcs_info:
+          $ref: '#/components/schemas/Project_vcs_info'
+      required:
+      - name
+      - organization_name
+      - slug
+      - vcs_info
+    Job_Details_executor:
+      description: Information about executor used for a job.
+      example:
+        resource_class: resource_class
+        type: type
+      properties:
+        type:
+          description: Executor type.
+          type: string
+        resource_class:
+          description: Resource class name.
+          type: string
+      required:
+      - resource_class
+      - type
+    EnvironmentVariablePair:
+      example:
+        name: foo
+        value: xxxx1234
+      properties:
+        name:
+          description: The name of the environment variable.
+          example: foo
+          type: string
+        value:
+          description: The value of the environment variable.
+          example: xxxx1234
+          type: string
+      required:
+      - name
+      - value
+    Collaboration:
+      example:
+        vcs-type: vcs-type
+        avatar_url: avatar_url
+        name: name
+      properties:
+        vcs-type:
+          description: The VCS provider
+          type: string
+        name:
+          description: The name of the organization
+          type: string
+        avatar_url:
+          description: URL to the user's avatar on the VCS
+          type: string
+      required:
+      - avatar_url
+      - name
+      - vcs-type
+    inline_response_200_1:
+      description: Recent workflow runs.
+      example:
+        items:
+        - duration: 0
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          stopped_at: 2000-01-23T04:56:07.000+00:00
+          credits-used: 0
+          status: success
+        - duration: 0
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          stopped_at: 2000-01-23T04:56:07.000+00:00
+          credits-used: 0
+          status: success
+      properties:
+        items:
+          description: Recent workflow runs.
+          items:
+            $ref: '#/components/schemas/inline_response_200_1_items'
+          type: array
+      required:
+      - items
+    RerunWorkflowParameters:
+      description: The information you can supply when rerunning a workflow.
+      example:
+        from_failed: false
+        jobs:
+        - c65b68ef-e73b-4bf2-be9a-7a322a9df150
+        - 5e957edd-5e8c-4985-9178-5d0d69561822
+      properties:
+        jobs:
+          description: A list of job IDs to rerun.
+          example:
+          - c65b68ef-e73b-4bf2-be9a-7a322a9df150
+          - 5e957edd-5e8c-4985-9178-5d0d69561822
+          items:
+            format: uuid
+            type: string
+          type: array
+        from_failed:
+          description: Whether to rerun the workflow from the failed job. Mutually
+            exclusive with the jobs parameter.
+          example: false
+          type: boolean
+      title: RerunWorkflowParameters
+      type: object
+      x-nullable: true
+    Pipeline_vcs:
+      description: VCS information for the pipeline.
+      example:
+        target_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+        commit:
+          subject: subject
+          body: body
+        tag: v3.1.4159
+        provider_name: GitHub
+        origin_repository_url: https://github.com/CircleCI-Public/api-preview-docs
+        branch: feature/design-new-api
+        revision: f454a02b5d10fcccfd7d9dd7608a76d6493a98b4
+      properties:
+        provider_name:
+          description: Name of the VCS provider (e.g. GitHub, Bitbucket).
+          example: GitHub
+          type: string
+        origin_repository_url:
+          description: URL for the repository where the trigger originated. For fork-PR
+            pipelines, this is the URL to the fork. For other pipelines the `origin_`
+            and `target_repository_url`s will be the same.
+          example: https://github.com/CircleCI-Public/api-preview-docs
+          type: string
+        target_repository_url:
+          description: URL for the repository the trigger targets (i.e. the repository
+            where the PR will be merged). For fork-PR pipelines, this is the URL to
+            the parent repo. For other pipelines, the `origin_` and `target_repository_url`s
+            will be the same.
+          example: https://github.com/CircleCI-Public/api-preview-docs
+          type: string
+        revision:
+          description: The code revision the pipeline ran.
+          example: f454a02b5d10fcccfd7d9dd7608a76d6493a98b4
+          type: string
+        branch:
+          description: The branch where the pipeline ran. The HEAD commit on this
+            branch was used for the pipeline. Note that `branch` and `tag` are mutually
+            exclusive.
+          example: feature/design-new-api
+          type: string
+        tag:
+          description: The tag used by the pipeline. The commit that this tag points
+            to was used for the pipeline. Note that `branch` and `tag` are mutually
+            exclusive.
+          example: v3.1.4159
+          type: string
+        commit:
+          $ref: '#/components/schemas/Pipeline_vcs_commit'
+      required:
+      - origin_repository_url
+      - provider_name
+      - revision
+      - target_repository_url
+    CheckoutKeyListResponse:
+      example:
+        next_page_token: next_page_token
+        items:
+        - fingerprint: c9:0b:1c:4f:d5:65:56:b9:ad:88:f9:81:2b:37:74:2f
+          public-key: ssh-rsa ...
+          created-at: 2015-09-21T17:29:21.042Z
+          type: deploy-key
+          preferred: true
+        - fingerprint: c9:0b:1c:4f:d5:65:56:b9:ad:88:f9:81:2b:37:74:2f
+          public-key: ssh-rsa ...
+          created-at: 2015-09-21T17:29:21.042Z
+          type: deploy-key
+          preferred: true
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/CheckoutKey'
+          type: array
+        next_page_token:
+          description: A token to pass as a `page-token` query parameter to return
+            the next page of results.
+          type: string
+          x-nullable: true
+      required:
+      - items
+      - next_page_token
+    TestsResponse_items:
+      example:
+        result: result
+        file: file
+        classname: classname
+        name: name
+        message: message
+      properties:
+        message:
+          description: The failure message associated with the test.
+          type: string
+          x-nullable: true
+        file:
+          description: The file in which the test is defined.
+          type: string
+        result:
+          description: Indication of whether the test succeeded.
+          type: string
+        name:
+          description: The name of the test.
+          type: string
+        classname:
+          description: The programmatic location of the test.
+          type: string
+      required:
+      - classname
+      - file
+      - message
+      - name
+      - result
+  securitySchemes:
+    api_key_query:
+      in: query
+      name: circle-token
+      type: apiKey
+    api_key_header:
+      in: header
+      name: Circle-Token
+      type: apiKey
+    basic_auth:
+      description: HTTP basic authentication. The username should be set as the circle-token
+        value, and the password should be left blank. Note that project tokens are
+        currently not supported on API v2.
+      scheme: basic
+      type: http
