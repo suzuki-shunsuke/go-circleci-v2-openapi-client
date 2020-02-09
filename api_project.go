@@ -15,7 +15,6 @@ import (
 	_nethttp "net/http"
 	_neturl "net/url"
 	"strings"
-	"github.com/antihax/optional"
 )
 
 // Linger please
@@ -26,18 +25,13 @@ var (
 // ProjectApiService ProjectApi service
 type ProjectApiService service
 
-// CreateCheckoutKeyOpts Optional parameters for the method 'CreateCheckoutKey'
-type CreateCheckoutKeyOpts struct {
-    CheckoutKeyInput optional.Interface
-}
-
 /*
 CreateCheckoutKey Create a new checkout key
 Creates a new checkout key. This API request is only usable with a user API token.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param projectSlug Project slug in the form `vcs-slug/org-name/repo-name`. The `/` characters may be URL-escaped.
  * @param optional nil or *CreateCheckoutKeyOpts - Optional Parameters:
- * @param "CheckoutKeyInput" (optional.Interface of CheckoutKeyInput) - 
+ * @param "CheckoutKeyInput" (optional.Interface of CheckoutKeyInput) -
 @return CheckoutKey
 */
 func (a *ProjectApiService) CreateCheckoutKey(ctx _context.Context, projectSlug string, localVarOptionals *CreateCheckoutKeyOpts) (CheckoutKey, *_nethttp.Response, error) {
@@ -52,7 +46,7 @@ func (a *ProjectApiService) CreateCheckoutKey(ctx _context.Context, projectSlug 
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/checkout-key"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -153,18 +147,13 @@ func (a *ProjectApiService) CreateCheckoutKey(ctx _context.Context, projectSlug 
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-// CreateEnvVarOpts Optional parameters for the method 'CreateEnvVar'
-type CreateEnvVarOpts struct {
-    EnvironmentVariablePair1 optional.Interface
-}
-
 /*
 CreateEnvVar Create an environment variable
 Creates a new environment variable.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param projectSlug Project slug in the form `vcs-slug/org-name/repo-name`. The `/` characters may be URL-escaped.
  * @param optional nil or *CreateEnvVarOpts - Optional Parameters:
- * @param "EnvironmentVariablePair1" (optional.Interface of EnvironmentVariablePair1) - 
+ * @param "EnvironmentVariablePair1" (optional.Interface of EnvironmentVariablePair1) -
 @return EnvironmentVariablePair
 */
 func (a *ProjectApiService) CreateEnvVar(ctx _context.Context, projectSlug string, localVarOptionals *CreateEnvVarOpts) (EnvironmentVariablePair, *_nethttp.Response, error) {
@@ -179,7 +168,7 @@ func (a *ProjectApiService) CreateEnvVar(ctx _context.Context, projectSlug strin
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/envvar"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -300,9 +289,9 @@ func (a *ProjectApiService) DeleteCheckoutKey(ctx _context.Context, projectSlug 
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/checkout-key/{fingerprint}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
-	localVarPath = strings.Replace(localVarPath, "{"+"fingerprint"+"}", _neturl.QueryEscape(parameterToString(fingerprint, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"fingerprint"+"}", _neturl.QueryEscape(parameterToString(fingerprint, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -414,9 +403,9 @@ func (a *ProjectApiService) DeleteEnvVar(ctx _context.Context, projectSlug strin
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/envvar/{name}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
-	localVarPath = strings.Replace(localVarPath, "{"+"name"+"}", _neturl.QueryEscape(parameterToString(name, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"name"+"}", _neturl.QueryEscape(parameterToString(name, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -528,9 +517,9 @@ func (a *ProjectApiService) GetCheckoutKey(ctx _context.Context, projectSlug str
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/checkout-key/{fingerprint}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
-	localVarPath = strings.Replace(localVarPath, "{"+"fingerprint"+"}", _neturl.QueryEscape(parameterToString(fingerprint, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"fingerprint"+"}", _neturl.QueryEscape(parameterToString(fingerprint, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -642,9 +631,9 @@ func (a *ProjectApiService) GetEnvVar(ctx _context.Context, projectSlug string, 
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/envvar/{name}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
-	localVarPath = strings.Replace(localVarPath, "{"+"name"+"}", _neturl.QueryEscape(parameterToString(name, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"name"+"}", _neturl.QueryEscape(parameterToString(name, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -755,7 +744,7 @@ func (a *ProjectApiService) GetProjectBySlug(ctx _context.Context, projectSlug s
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -866,7 +855,7 @@ func (a *ProjectApiService) ListCheckoutKeys(ctx _context.Context, projectSlug s
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/checkout-key"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -977,7 +966,7 @@ func (a *ProjectApiService) ListEnvVars(ctx _context.Context, projectSlug string
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/project/{project-slug}/envvar"
-	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"project-slug"+"}", _neturl.QueryEscape(parameterToString(projectSlug, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
