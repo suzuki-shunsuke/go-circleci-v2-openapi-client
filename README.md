@@ -1,4 +1,9 @@
-# Go API client for circleci
+# Go API client for CircleCI
+
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/suzuki-shunsuke/go-circleci-v2-openapi-client)
+[![Build Status](https://cloud.drone.io/api/badges/suzuki-shunsuke/go-circleci-v2-openapi-client/status.svg)](https://cloud.drone.io/suzuki-shunsuke/go-circleci-v2-openapi-client)
+[![GitHub last commit](https://img.shields.io/github/last-commit/suzuki-shunsuke/go-circleci-v2-openapi-client.svg)](https://github.com/suzuki-shunsuke/go-circleci-v2-openapi-client)
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/suzuki-shunsuke/go-circleci-v2-openapi-client/master/LICENSE)
 
 This describes the resources that make up the CircleCI API v2. API v2 is currently in Preview. Additional documentation for this API can be found in the [API Preview Docs](https://github.com/CircleCI-Public/api-preview-docs/tree/master/docs). Breaking changes to the API will be announced in the [Breaking Changes log](https://github.com/CircleCI-Public/api-preview-docs/blob/master/docs/breaking.md).
 
