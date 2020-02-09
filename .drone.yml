@@ -2,7 +2,7 @@
 kind: pipeline
 name: build
 steps:
-- name: go vet
+- name: go test
   image: golang:1.13.7
   commands:
-  - go vet ./...
+  - go test -v ./...
